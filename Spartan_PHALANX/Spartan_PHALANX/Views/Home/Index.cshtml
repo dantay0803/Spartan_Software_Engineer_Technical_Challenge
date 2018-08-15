@@ -1,0 +1,55 @@
+﻿<!-- Equipment Display Page -->
+<div data-role="page" id="equipmentDisplayPage">
+    <div data-role="header" role="banner" class="ui-header ui-bar-inherit">
+        <h1>Equipment Search</h1>
+    </div>
+    <div role="main" class="ui-content" id="equipmentDisplayList">
+        <form class="ui-filterable">
+            <input id="filterEquipment" data-type="search" placeholder="Enter search term">
+        </form>
+        <ul data-role="listview" data-inset="true" id="equipmentList" data-filter="true" data-input="#filterEquipment"></ul>
+    </div>
+</div>
+
+<script src="~/Scripts/jquery-2.1.0.js"></script>
+<script src="~/Scripts/jquery.mobile-1.4.5.js"></script>
+
+<script type="text/javascript">
+    //Make AJAX request to server to get JSON Data
+    $(document).ready(function () {
+        $.ajax({
+            url: "/Api/Equipment",
+            datatype: "json",
+            success: function (data) {
+
+                //Copy the customers data into a new array, so already used items can be removed for fast looping
+                var customerEquipment = data.SerialisedEquipment.slice();
+
+                for (var i = 0; i < data.EquipmentType.length; i++) {
+                    for (var j = customerEquipment.length - 1; j > -1; j--) {
+
+                        //Add new list item to listview when user items match equipment item
+                        if (customerEquipment[j].EquipmentTypeId === data.EquipmentType[i].Id) {
+                            let newListItem = `<li class=""><a href="#" class="ui-btn ui-btn-icon-right ui-icon-carat-r">
+                                                <p><b>${customerEquipment[j].ExternalId}</b></p>
+                                                <p>${data.EquipmentType[i].ExternalId}</p>
+                                                <p>${data.EquipmentType[i].Description}</p>
+                                            </a></li>`;
+
+                            $('#equipmentList').append(newListItem);
+
+                            customerEquipment.splice(j, 1);
+                        }
+                    }
+                }
+            },
+            oncomplete: function () {
+                //Once all items have been appended to page refresh the list view
+                $('#equipmentList').listview('refresh');
+            },
+            error: function (err) {
+                console.log(err)
+            }
+        });
+    });
+</script>
